@@ -6,19 +6,7 @@ Author: Yuhao Zhu
 import math
 import numpy as np
 from scipy.stats import norm
-from scipy.optimize import fsolve
-from scipy.optimize import broyden1
-from scipy.optimize import minimize
-from scipy.optimize import fmin
 from scipy import integrate
-
-"""
-Just for fun:
-"""
-
-def mysin(a):
-    y = math.sin(a)
-    return y
 
 """
 Production function:

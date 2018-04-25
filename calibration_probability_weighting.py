@@ -9,15 +9,8 @@ Versions: See readme file.
 import sys, os
 sys.path.append(os.getcwd())
 
-from functions import *
-import math
-import numpy as np
-from scipy.stats import norm
-from scipy.optimize import fsolve
-from scipy.optimize import broyden1
+from function.functions import *
 from scipy.optimize import minimize
-from scipy.optimize import fmin
-from scipy import integrate
 import csv
 import pandas as pd
 
@@ -192,7 +185,7 @@ for gamma in [0.5, 1.01, 2, 3, 5, 8]:
                       'phi_opt', 'n_s_opt', 'n_o_opt', 
                       'E_U', 'E_UPPS', 'E_cost_0', 'E_U_opt', 'E_UPPS_opt', 'E_cost_0_opt',
                       'distance', 'savings']
-        df.to_csv('results_piecewise_contracts/gamma_{}_eta_s_{}_eta_m_{}.csv'.format(gamma, eta_s, eta_m))
+        df.to_csv('results/gamma_{}_eta_s_{}_eta_m_{}.csv'.format(gamma, eta_s, eta_m))
         print('File gamma_{}_eta_s_{}_eta_m_{}.csv saved!'.format(gamma, eta_s, eta_m))
         print('')
 
@@ -292,6 +285,6 @@ for gamma in [0.1]:
                           'phi_opt', 'n_s_opt', 'n_o_opt', 
                           'E_U', 'E_UPPS', 'E_cost_0', 'E_U_opt', 'E_UPPS_opt', 'E_cost_0_opt',
                           'distance', 'savings']
-            df.to_csv('results_piecewise_contracts/gamma_{}_eta_s_{}_eta_m_{}.csv'.format(gamma, eta_s, eta_m))
+            df.to_csv('results/gamma_{}_eta_s_{}_eta_m_{}.csv'.format(gamma, eta_s, eta_m))
             print('File gamma_{}_eta_s_{}_eta_m_{}.csv saved!'.format(gamma, eta_s, eta_m))
 """
