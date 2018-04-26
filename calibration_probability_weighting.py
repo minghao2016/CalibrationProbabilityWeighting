@@ -120,147 +120,50 @@ for gamma in [0.2]:
 """
 Calibration using eta_s and eta_m.
 """
+# gamma = 1.01, 2, 3, 5, 8
 
-eta_m = 0
-for gamma in [0.5, 1.01, 2, 3, 5, 8]:
-    for eta_s in [0.5, 0.75, 1.25, 1.5, 1.75]:
-        print('=' * 60)
-        print('gamma {} eta_s {} eta_m {} begins!'.format(gamma, eta_s, eta_m))
-        list_optimal_contracts = []
-        for count in range(0, len(list_representative_contracts)):
-            print('Start the contract {}'.format(count))
-            try:
-                co_per_rol, P_0, r_f, d, s, T, phi, n_s, n_o, K, wealth, rescale_factor = list_representative_contracts[count]
-
-                variables_pc = [phi, n_s, n_o]
-                parameters = [P_0, r_f, d, s, T, wealth, K]
-
-                E_U = f_E_U_pc(variables_pc, parameters, gamma, eta_s, eta_m, wealth_min=0.01)
-                E_UPPS = f_E_UPPS_pc(variables_pc, parameters, gamma, eta_s, eta_m, wealth_min=0.01)
-                E_cost_0 = f_E_cost_0_pc(variables_pc, parameters)
-
-                # Optimization program
-        
-                cons = ({'type': 'ineq', 
-                         'fun': lambda variables, parameters: f_E_U_pc(variables, parameters, gamma, eta_s, eta_m, wealth_min=0.01) - E_U, 
-                         'args': (parameters,)},
-                        {'type': 'ineq',
-                         'fun': lambda variables, parameters: f_E_UPPS_pc(variables, parameters, gamma, eta_s, eta_m, wealth_min=0.01) - E_UPPS, 
-                         'args': (parameters,)}
-                       )
-
-                bnds = ((-wealth, np.inf), (0.00, 1.00), (0, 1.00))
-
-                contract_opt = minimize(fun=f_E_cost_T_pc, x0=variables_pc, args=parameters, method='SLSQP',
-                                        bounds=bnds, constraints=cons, tol=None, callback=None, 
-                                        options={'disp': False, 'iprint': 1, 'eps': 1.4901161193847656e-08, 'maxiter': 100, 'ftol': 1e-06})
-                phi_opt, n_s_opt, n_o_opt = contract_opt.x
-                variables_opt = [phi_opt, n_s_opt, n_o_opt]
-                E_U_opt = f_E_U_pc(variables_opt, parameters, gamma, eta_s, eta_m, wealth_min=0.01)
-                E_UPPS_opt = f_E_UPPS_pc(variables_opt, parameters, gamma, eta_s, eta_m, wealth_min=0.01)
-                E_cost_0_opt = f_E_cost_0_pc(variables_opt, parameters)
-
-                # Distance metrics
-                distance = f_E_distance(P_0, r_f, d, s, T, phi, n_s, n_o, K, wealth, phi_opt, n_s_opt, n_o_opt)
-                savings = (E_cost_0 - E_cost_0_opt) / E_cost_0
-                arguments = [phi_opt, n_s_opt, n_o_opt]
-                statistics = [E_U, E_UPPS, E_cost_0 * rescale_factor, E_U_opt, E_UPPS_opt, E_cost_0_opt * rescale_factor]
-                flags = [distance, savings]
-                results = arguments + statistics + flags
-                list_optimal_contracts.append(results)
-            except:
-                results = [0, 0, 0,
-                           0, 0, 0, 0, 0, 0,
-                           0, 0]
-                list_optimal_contracts.append(results)
-
-        # Put the original contract and the optimal contract together and output the file.
-        results = []
-        for i in range(len(list_optimal_contracts)):
-            whole_contract = list_representative_contracts[i] + list_optimal_contracts[i]
-            results.append(whole_contract)
-
-        df = pd.DataFrame(results)
-        df.columns = ['co_per_rol', 'P_0', 'r_f', 'd', 'sigma', 'T', 'phi', 'n_s', 'n_o', 'K', 'wealth', 'rescale_factor', 
-                      'phi_opt', 'n_s_opt', 'n_o_opt', 
-                      'E_U', 'E_UPPS', 'E_cost_0', 'E_U_opt', 'E_UPPS_opt', 'E_cost_0_opt',
-                      'distance', 'savings']
-        df.to_csv('results/gamma_{}_eta_s_{}_eta_m_{}.csv'.format(gamma, eta_s, eta_m))
-        print('File gamma_{}_eta_s_{}_eta_m_{}.csv saved!'.format(gamma, eta_s, eta_m))
-        print('')
-
-"""
-for gamma in [0.1]:
-    for eta_s in [1, 2, 3]:
-        for eta_m in [0, 0.25, 0.5]:
+for eta_m in [0]:
+    for gamma in [0.5]:
+        for eta_s in [1.5, 1.75]:
+            print('=' * 60)
             print('gamma {} eta_s {} eta_m {} begins!'.format(gamma, eta_s, eta_m))
             list_optimal_contracts = []
             for count in range(0, len(list_representative_contracts)):
-    #             print('The contract is {}'.format(list_representative_contracts[count]))
+                print('Start the contract {}'.format(count))
                 try:
                     co_per_rol, P_0, r_f, d, s, T, phi, n_s, n_o, K, wealth, rescale_factor = list_representative_contracts[count]
-    #                 print('The original contract is:')
-    #                 print('P_0 = {}'.format(P_0))
-    #                 print('s = {}'.format(s))
-    #                 print('T = {}'.format(T))
-    #                 print('phi = {}'.format(phi))
-    #                 print('n_s = {:.02f}%'.format(n_s * 100))
-    #                 print('n_o = {:.02f}%'.format(n_o * 100))
-    #                 print('K = {}'.format(K))
-    #                 print('wealth = {}'.format(wealth))
-    #                 print('rescale factor = {}'.format(rescale_factor))
 
                     variables_pc = [phi, n_s, n_o]
                     parameters = [P_0, r_f, d, s, T, wealth, K]
 
-                    E_U = f_E_U_pc(variables_pc, parameters)
-    #                 print('EU: {}'.format(E_U))
-                    E_UPPS = f_E_UPPS_pc(variables_pc, parameters)
-    #                 print('EUPPS: {}'.format(E_UPPS))
+                    E_U = f_E_U_pc(variables_pc, parameters, gamma, eta_s, eta_m, wealth_min=0.01)
+                    E_UPPS = f_E_UPPS_pc(variables_pc, parameters, gamma, eta_s, eta_m, wealth_min=0.01)
                     E_cost_0 = f_E_cost_0_pc(variables_pc, parameters)
-    #                 print('Ecost: {}m'.format(E_cost_0 * rescale_factor))
 
-                    #############################################################################################
                     # Optimization program
-                    #############################################################################################
-
+            
                     cons = ({'type': 'ineq', 
-                             'fun': lambda variables, parameters: f_E_U_pc(variables, parameters) - E_U, 
-                             'args': (parameters,)},
+                            'fun': lambda variables, parameters: f_E_U_pc(variables, parameters, gamma, eta_s, eta_m, wealth_min=0.01) - E_U, 
+                            'args': (parameters,)},
                             {'type': 'ineq',
-                             'fun': lambda variables, parameters: f_E_UPPS_pc(variables, parameters) - E_UPPS, 
-                             'args': (parameters,)}
-                           )
+                            'fun': lambda variables, parameters: f_E_UPPS_pc(variables, parameters, gamma, eta_s, eta_m, wealth_min=0.01) - E_UPPS, 
+                            'args': (parameters,)}
+                        )
 
                     bnds = ((-wealth, np.inf), (0.00, 1.00), (0, 1.00))
 
-    #                 print('\nOptimal piecewise linear contract')
                     contract_opt = minimize(fun=f_E_cost_T_pc, x0=variables_pc, args=parameters, method='SLSQP',
                                             bounds=bnds, constraints=cons, tol=None, callback=None, 
                                             options={'disp': False, 'iprint': 1, 'eps': 1.4901161193847656e-08, 'maxiter': 100, 'ftol': 1e-06})
                     phi_opt, n_s_opt, n_o_opt = contract_opt.x
-    #                 print('phi_opt = {}'.format(phi_opt))
-    #                 print('n_s_opt = {:.02f}%'.format(n_s_opt * 100))
-    #                 print('n_o_opt = {:.02f}%'.format(n_o_opt * 100))        
                     variables_opt = [phi_opt, n_s_opt, n_o_opt]
-                    E_U_opt = f_E_U_pc(variables_opt, parameters)
-    #                 print('EU_opt: {}'.format(E_U_opt))
-                    E_UPPS_opt = f_E_UPPS_pc(variables_opt, parameters)
-    #                 print('EUPPS_opt: {}'.format(E_UPPS_opt))
+                    E_U_opt = f_E_U_pc(variables_opt, parameters, gamma, eta_s, eta_m, wealth_min=0.01)
+                    E_UPPS_opt = f_E_UPPS_pc(variables_opt, parameters, gamma, eta_s, eta_m, wealth_min=0.01)
                     E_cost_0_opt = f_E_cost_0_pc(variables_opt, parameters)
-    #                 print('Ecost_opt: {}m'.format(E_cost_0_opt * rescale_factor))
 
-                    #############################################################################################
-                    # Distance measure
-                    #############################################################################################
-
+                    # Distance metrics
                     distance = f_E_distance(P_0, r_f, d, s, T, phi, n_s, n_o, K, wealth, phi_opt, n_s_opt, n_o_opt)
                     savings = (E_cost_0 - E_cost_0_opt) / E_cost_0
-    #                 print('distance = {}'.format(distance))
-    #                 print('savings = {}'.format(savings))
-    #                 print('')
-    #                 print('=====================================================================================')
-
                     arguments = [phi_opt, n_s_opt, n_o_opt]
                     statistics = [E_U, E_UPPS, E_cost_0 * rescale_factor, E_U_opt, E_UPPS_opt, E_cost_0_opt * rescale_factor]
                     flags = [distance, savings]
@@ -268,11 +171,9 @@ for gamma in [0.1]:
                     list_optimal_contracts.append(results)
                 except:
                     results = [0, 0, 0,
-                               0, 0, 0, 0, 0, 0,
-                              0, 0]
+                            0, 0, 0, 0, 0, 0,
+                            0, 0]
                     list_optimal_contracts.append(results)
-    #                 print('Cannot solve it!')
-    #                 print('')
 
             # Put the original contract and the optimal contract together and output the file.
             results = []
@@ -282,9 +183,9 @@ for gamma in [0.1]:
 
             df = pd.DataFrame(results)
             df.columns = ['co_per_rol', 'P_0', 'r_f', 'd', 'sigma', 'T', 'phi', 'n_s', 'n_o', 'K', 'wealth', 'rescale_factor', 
-                          'phi_opt', 'n_s_opt', 'n_o_opt', 
-                          'E_U', 'E_UPPS', 'E_cost_0', 'E_U_opt', 'E_UPPS_opt', 'E_cost_0_opt',
-                          'distance', 'savings']
+                        'phi_opt', 'n_s_opt', 'n_o_opt', 
+                        'E_U', 'E_UPPS', 'E_cost_0', 'E_U_opt', 'E_UPPS_opt', 'E_cost_0_opt',
+                        'distance', 'savings']
             df.to_csv('results/gamma_{}_eta_s_{}_eta_m_{}.csv'.format(gamma, eta_s, eta_m))
             print('File gamma_{}_eta_s_{}_eta_m_{}.csv saved!'.format(gamma, eta_s, eta_m))
-"""
+            print('')
