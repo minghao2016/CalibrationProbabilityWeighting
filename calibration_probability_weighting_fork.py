@@ -124,7 +124,7 @@ Calibration using eta_s and eta_m.
 
 for eta_m in [0]:
     for gamma in [1.01, 2, 3, 5, 8]:
-        for eta_s in [1.25]:
+        for eta_s in [1.75]:
             print('=' * 60)
             print('gamma {} eta_s {} eta_m {} begins!'.format(gamma, eta_s, eta_m))
             list_optimal_contracts = []
