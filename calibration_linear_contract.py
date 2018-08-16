@@ -9,11 +9,12 @@ Versions: See readme file.
 import sys, os
 sys.path.append(os.getcwd())
 
-from include.functions import *
+from include.basic import *
+from include.linear import *
 from scipy.optimize import minimize
 import csv
 import pandas as pd
-
+import datetime
 
 df = pd.read_csv("data/representative_contracts.csv")
 list_representative_contracts = df.values.tolist()
@@ -23,7 +24,7 @@ list_representative_contracts = df.values.tolist()
 Calibration using approximated theta.
 """
 
-"""
+
 abs_diff = [
 #    (0.1, 21.1123266358844, 60.645676606364106),
 #    (0.2, 8.651929204945983, 13.524499495663248),
@@ -39,22 +40,24 @@ abs_diff = [
 square_diff = [
 #    (0.1, 1.3730384415052759, 5.609934733205399),
 #    (0.2, 5.490607798404917, 8.407196974235255),
-    (0.3, 3.8611937871408837, 3.582617741605922),
+#    (0.3, 3.8611937871408837, 3.582617741605922),
     (0.4, 2.884768181778572, 1.657024470484358),
     (0.5, 2.233070013091103, 0.7790848676727394),
     (0.6, 1.787746146210776, 0.357638829839582),
     (0.7, 1.478951570393733, 0.15138856920931862),
     (0.8, 1.26259402734772, 0.05262966657816373),
-    (0.9, 1.1095263507982236, 0.010608602819599581)
+#    (0.9, 1.1095263507982236, 0.010608602819599581)
 ]
 
-for gamma in [0.2]:
-    for approximates in [square_diff[-1]]:
+"""
+for gamma in [8]:
+    for approximates in square_diff:
+        print('=' * 60)
         (delta, eta_s, eta_m) = approximates
-        print('gamma {} delta {} begins!'.format(gamma, delta))
+        print('gamma {} delta {} begins at time {}'.format(gamma, delta, datetime.datetime.now()))
         list_optimal_contracts = []
         for count in range(0, len(list_representative_contracts)):
-            print('Start the contract {}'.format(count))
+            print('Start the contract {} at time {}'.format(count, datetime.datetime.now()))
             try:
                 co_per_rol, P_0, r_f, d, s, T, phi, n_s, n_o, K, wealth, rescale_factor = list_representative_contracts[count]
 
@@ -77,7 +80,7 @@ for gamma in [0.2]:
                          'args': (parameters,)}
                        )
 
-                bnds = ((-wealth, np.inf), (0.00, 1.00), (0, 1.00))
+                bnds = ((-wealth, np.inf), (0.00, 1.00), (-n_s, 1.00))
 
                 contract_opt = minimize(fun=f_E_cost_T_pc, x0=variables_pc, args=parameters, method='SLSQP',
                                         bounds=bnds, constraints=cons, tol=None, callback=None, 
@@ -113,9 +116,9 @@ for gamma in [0.2]:
                       'E_U', 'E_UPPS', 'E_cost_0', 'E_U_opt', 'E_UPPS_opt', 'E_cost_0_opt',
                       'distance', 'savings']
         df.to_csv('results_piecewise_contracts/gamma_{}_delta_{}.csv'.format(gamma, delta))
-        print('File results_piecewise_contracts/gamma_{}_delta_{}.csv saved!'.format(gamma, delta))
-
+        print('File results_piecewise_contracts/gamma_{}_delta_{}.csv saved at time {}'.format(gamma, delta, datetime.datetime.now()))
 """
+
 
 """
 Calibration using eta_s and eta_m.
@@ -123,13 +126,13 @@ Calibration using eta_s and eta_m.
 # gamma = 1.01, 2, 3, 5, 8
 
 for eta_m in [0]:
-    for gamma in [1.01, 2, 3, 5, 8]:
-        for eta_s in [1.25]:
+    for gamma in [0.5, 1.01, 2, 3, 5, 8]:
+        for eta_s in [1]:
             print('=' * 60)
-            print('gamma {} eta_s {} eta_m {} begins!'.format(gamma, eta_s, eta_m))
+            print('gamma {} eta_s {} eta_m {} begins at time {}'.format(gamma, eta_s, eta_m, datetime.datetime.now()))
             list_optimal_contracts = []
             for count in range(0, len(list_representative_contracts)):
-                print('Start the contract {}'.format(count))
+                print('Start the contract {} at time {}'.format(count, datetime.datetime.now()))
                 try:
                     co_per_rol, P_0, r_f, d, s, T, phi, n_s, n_o, K, wealth, rescale_factor = list_representative_contracts[count]
 
@@ -150,7 +153,7 @@ for eta_m in [0]:
                             'args': (parameters,)}
                         )
 
-                    bnds = ((-wealth, np.inf), (0.00, 1.00), (0, 1.00))
+                    bnds = ((-wealth, np.inf), (0.00, 1.00), (-n_s, 1.00))
 
                     contract_opt = minimize(fun=f_E_cost_T_pc, x0=variables_pc, args=parameters, method='SLSQP',
                                             bounds=bnds, constraints=cons, tol=None, callback=None, 
@@ -171,8 +174,8 @@ for eta_m in [0]:
                     list_optimal_contracts.append(results)
                 except:
                     results = [0, 0, 0,
-                            0, 0, 0, 0, 0, 0,
-                            0, 0]
+                               0, 0, 0, 0, 0, 0,
+                               0, 0]
                     list_optimal_contracts.append(results)
 
             # Put the original contract and the optimal contract together and output the file.
@@ -186,6 +189,5 @@ for eta_m in [0]:
                         'phi_opt', 'n_s_opt', 'n_o_opt', 
                         'E_U', 'E_UPPS', 'E_cost_0', 'E_U_opt', 'E_UPPS_opt', 'E_cost_0_opt',
                         'distance', 'savings']
-            df.to_csv('results/gamma_{}_eta_s_{}_eta_m_{}.csv'.format(gamma, eta_s, eta_m))
-            print('File gamma_{}_eta_s_{}_eta_m_{}.csv saved!'.format(gamma, eta_s, eta_m))
-            print('')
+            df.to_csv('results_piecewise_contracts/gamma_{}_eta_s_{}_eta_m_{}.csv'.format(gamma, eta_s, eta_m))
+            print('File results_piecewise_contracts/gamma_{}_eta_s_{}_eta_m_{}.csv saved at time {}'.format(gamma, eta_s, eta_m, datetime.datetime.now()))
