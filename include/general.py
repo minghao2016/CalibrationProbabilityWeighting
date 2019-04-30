@@ -6,7 +6,7 @@ Author: Yuhao Zhu
 import math
 import numpy as np
 from include.basic import *
-from include.basic import f_W_0_pc
+from include.linear import f_W_0_pc
 from scipy.stats import norm
 from scipy import integrate
 
